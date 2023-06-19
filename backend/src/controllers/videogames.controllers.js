@@ -187,6 +187,74 @@ export const getVideogames = async (req, res) => {
   }
 };
 
+export const getVideoGamesSorted = async (req, res) => {
+  try {
+    const { query } = req;
+    const { field, order } = query;
+
+    let sortField;
+
+    switch (field) {
+      case "title":
+        sortField = "title";
+        break;
+      case "developers":
+        sortField = "developers.developer";
+        break;
+      case "platforms":
+        sortField = "platforms.platform";
+        break;
+      case "genres":
+        sortField = "genres.genre";
+        break;
+      case "year":
+        sortField = "year";
+        break;
+      default:
+        return res.status(400).json({ message: "Invalid sort field" });
+    }
+
+    const sortOrder = order === "desc" ? -1 : 1;
+
+    const sortedDocuments = await Videogame.find()
+      .sort({ [sortField]: sortOrder })
+      .exec();
+
+    const formattedVideogames = sortedDocuments.map(
+      ({
+        _id,
+        title,
+        description,
+        developers,
+        platforms,
+        genres,
+        year,
+        covers,
+        thumbnails,
+      }) => {
+        return {
+          _id,
+          title,
+          description,
+          developers,
+          platforms,
+          genres,
+          year,
+          covers,
+          thumbnails,
+        };
+      }
+    );
+
+    res.json(formattedVideogames);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: `Internal Server Error: ${error.message}` });
+  }
+};
+
 export const searchByQuery = async (req, res) => {
   try {
     const { query } = req;

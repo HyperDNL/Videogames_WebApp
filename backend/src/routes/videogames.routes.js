@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createVideogame,
   getVideogames,
+  getVideoGamesSorted,
   searchByQuery,
   getVideogame,
   updateVideogame,
@@ -14,6 +15,8 @@ const router = Router();
 router.post("/", createVideogame);
 
 router.get("/", getVideogames);
+
+router.get("/sort", getVideoGamesSorted);
 
 router.get("/search", searchByQuery);
 
