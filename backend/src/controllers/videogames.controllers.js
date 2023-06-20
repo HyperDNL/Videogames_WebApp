@@ -141,7 +141,7 @@ export const createVideogame = async (req, res) => {
 
     await newVideogame.save();
 
-    res.status(201).json({ message: "Videogame created successfully" });
+    res.status(201).json(newVideogame);
   } catch (error) {
     return res
       .status(500)
@@ -187,7 +187,7 @@ export const getVideogames = async (req, res) => {
   }
 };
 
-export const getVideoGamesSorted = async (req, res) => {
+export const getVideogamesSorted = async (req, res) => {
   try {
     const { query } = req;
     const { field, order } = query;
@@ -518,11 +518,13 @@ export const updateVideogame = async (req, res) => {
       thumbnails: [...videogame.thumbnails, ...(thumbnailResults || [])],
     };
 
-    await Videogame.findByIdAndUpdate(id, updatedVideogame, { new: true });
+    const updatedVideogameDocument = await Videogame.findByIdAndUpdate(
+      id,
+      updatedVideogame,
+      { new: true }
+    );
 
-    res.json({
-      message: "Videogame updated successfully",
-    });
+    res.json(updatedVideogameDocument);
   } catch (error) {
     return res
       .status(500)
@@ -583,7 +585,7 @@ export const deleteThumbnail = async (req, res) => {
 
     await videogame.save();
 
-    res.json({ message: "Thumbnail deleted successfully" });
+    res.sendStatus(204);
   } catch (error) {
     return res
       .status(500)
