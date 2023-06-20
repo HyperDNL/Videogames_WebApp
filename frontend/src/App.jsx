@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { VideogameProvider } from "./context/videogamesContext";
 import VideogamesPage from "./pages/VideogamesPage";
 import VideogamePage from "./pages/VideogamePage";
 import CreateVideogameFormPage from "./pages/CreateVideogameFormPage";
@@ -15,19 +16,21 @@ const App = () => {
   return (
     <BrowserRouter>
       <Navbar routes={routes} />
-      <Routes>
-        <Route path="/" element={<VideogamesPage />} />
-        <Route path="/videogames/:id" element={<VideogamePage />} />
-        <Route
-          path="/videogames/add-videogame"
-          element={<CreateVideogameFormPage />}
-        />
-        <Route
-          path="/videogames/update-videoogame/:id"
-          element={<UpdateVideogameFormPage />}
-        />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      <VideogameProvider>
+        <Routes>
+          <Route path="/" element={<VideogamesPage />} />
+          <Route path="/videogames/:id" element={<VideogamePage />} />
+          <Route
+            path="/videogames/add-videogame"
+            element={<CreateVideogameFormPage />}
+          />
+          <Route
+            path="/videogames/update-videoogame/:id"
+            element={<UpdateVideogameFormPage />}
+          />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </VideogameProvider>
     </BrowserRouter>
   );
 };
