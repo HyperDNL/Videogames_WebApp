@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   createVideogameRequest,
   getVideogamesRequest,
@@ -9,6 +10,7 @@ import {
   deleteVideogameRequest,
   deleteThumbnailRequest,
 } from "../api/videogames.requests";
+import { ToastError } from "../resources/ToastMessages";
 
 const videogamesContext = createContext();
 
@@ -24,47 +26,54 @@ export const useVideogames = () => {
 export const VideogameProvider = ({ children }) => {
   const [videogames, setVideogames] = useState([]);
 
+  const navigate = useNavigate();
+
   const createVideogame = async (videogame) => {
-    const { data } = await createVideogameRequest(videogame);
+    const data = await createVideogameRequest(videogame);
     setVideogames([...videogames, data]);
   };
 
   const getVideogames = async () => {
-    const { data } = await getVideogamesRequest();
+    const data = await getVideogamesRequest();
     setVideogames(data);
   };
 
   const getVideogamesSorted = async (field, order) => {
-    const { data } = await getVideogamesSortedRequest(field, order);
+    const data = await getVideogamesSortedRequest(field, order);
     setVideogames(data);
   };
 
   const getVideogamesByQuery = async (field, value) => {
-    const { data } = await getVideogamesByQueryRequest(field, value);
-    setVideogames(data);
+    try {
+      const data = await getVideogamesByQueryRequest(field, value);
+      setVideogames(data);
+    } catch (error) {
+      ToastError("error", error.message);
+      navigate("/");
+    }
   };
 
   const getVideogame = async (id) => {
-    const { data } = await getVideogameRequest(id);
+    const data = await getVideogameRequest(id);
     return data;
   };
 
   const updateVideogame = async (id, newFields) => {
-    const { data } = await updateVideogameRequest(id, newFields);
+    const data = await updateVideogameRequest(id, newFields);
     setVideogames(
       videogames.map((videogame) => (videogame._id === id ? data : videogame))
     );
   };
 
   const deleteVideogame = async (id) => {
-    const { status } = await deleteVideogameRequest(id);
+    const status = await deleteVideogameRequest(id);
     if (status === 204) {
       setVideogames(videogames.filter(({ _id }) => _id !== id));
     }
   };
 
   const deleteThumbnail = async (idVideogame, idThumbnail) => {
-    const { status } = await deleteThumbnailRequest(idVideogame, idThumbnail);
+    const status = await deleteThumbnailRequest(idVideogame, idThumbnail);
     if (status === 204) {
       setVideogames((videogames) =>
         videogames.map((videogame) =>
@@ -80,10 +89,6 @@ export const VideogameProvider = ({ children }) => {
       );
     }
   };
-
-  useEffect(() => {
-    getVideogames();
-  }, []);
 
   return (
     <videogamesContext.Provider
