@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import { VideogameProvider } from "./context/videogamesContext";
 import VideogamesPage from "./pages/VideogamesPage";
 import VideogamePage from "./pages/VideogamePage";
@@ -17,6 +18,7 @@ const App = () => {
     <BrowserRouter>
       <Navbar routes={routes} />
       <VideogameProvider>
+        <Toaster />
         <Routes>
           <Route path="/" element={<VideogamesPage />} />
           <Route path="/videogames/:id" element={<VideogamePage />} />
