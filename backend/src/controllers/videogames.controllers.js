@@ -263,7 +263,7 @@ export const searchByQuery = async (req, res) => {
     if (!title && !developer && !platform && !genre && !year) {
       return res
         .status(400)
-        .json({ message: "At least one search parameter is required" });
+        .json({ message: "At least one valid search parameter is required" });
     }
 
     const searchQuery = {};
@@ -288,6 +288,11 @@ export const searchByQuery = async (req, res) => {
     }
 
     if (year) {
+      if (!validateNumberField(year)) {
+        return res
+          .status(400)
+          .json({ message: "Invalid data type in Year. Expected number." });
+      }
       orQuery.push({ year: parseInt(year) });
     }
 
