@@ -96,6 +96,19 @@ const Button = styled.button`
   }
 `;
 
+const NotFoundMessage = styled.p`
+  color: #ff3b30;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+`;
+
 const VideogamesPage = () => {
   const { videogames, getVideogames, getVideogamesByQuery } = useVideogames();
 
@@ -160,11 +173,15 @@ const VideogamesPage = () => {
         />
         <Button onClick={handleSearch}>Search</Button>
       </FormContainer>
-      <CoverGrid>
-        {videogames.map(({ _id, covers }) => (
-          <Cover key={_id} id={_id} url={covers.cover.url} />
-        ))}
-      </CoverGrid>
+      {videogames.length === 0 ? (
+        <NotFoundMessage>There are no Videogames</NotFoundMessage>
+      ) : (
+        <CoverGrid>
+          {videogames.map(({ _id, covers }) => (
+            <Cover key={_id} id={_id} url={covers.cover.url} />
+          ))}
+        </CoverGrid>
+      )}
     </>
   );
 };
