@@ -116,11 +116,8 @@ const VideogamesPage = () => {
     if (searchQuery && searchBy) {
       if (!searchByOptions.includes(searchBy)) {
         setField(searchByOptions[0]);
-        setQuery("");
-        navigate(location.pathname);
-      } else {
-        getVideogamesByQuery(searchBy, searchQuery);
       }
+      getVideogamesByQuery(searchBy, searchQuery);
     } else {
       getVideogames();
     }
