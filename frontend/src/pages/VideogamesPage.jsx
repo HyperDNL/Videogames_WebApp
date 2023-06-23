@@ -105,12 +105,22 @@ const VideogamesPage = () => {
   const searchBy = searchParams.get("searchBy");
   const searchQuery = searchParams.get("q");
 
-  const [field, setField] = useState(searchBy || "title");
+  const searchByOptions = ["title", "developer", "platform", "genre", "year"];
+
+  const [field, setField] = useState(
+    searchByOptions.includes(searchBy) ? searchBy : searchByOptions[0]
+  );
   const [query, setQuery] = useState(searchQuery || "");
 
   useEffect(() => {
     if (searchQuery && searchBy) {
-      getVideogamesByQuery(searchBy, searchQuery);
+      if (!searchByOptions.includes(searchBy)) {
+        setField(searchByOptions[0]);
+        setQuery("");
+        navigate(location.pathname);
+      } else {
+        getVideogamesByQuery(searchBy, searchQuery);
+      }
     } else {
       getVideogames();
     }
@@ -139,11 +149,11 @@ const VideogamesPage = () => {
     <>
       <FormContainer>
         <Select onChange={handleSearchBy} value={field}>
-          <option value="title">Title</option>
-          <option value="developer">Developer</option>
-          <option value="platform">Platform</option>
-          <option value="genre">Genre</option>
-          <option value="year">Year</option>
+          {searchByOptions.map((option) => (
+            <option key={option} value={option}>
+              {option.charAt(0).toUpperCase() + option.slice(1)}
+            </option>
+          ))}
         </Select>
         <Input
           type="text"
