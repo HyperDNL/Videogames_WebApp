@@ -1,5 +1,4 @@
 import { createContext, useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   createVideogameRequest,
   getVideogamesRequest,
@@ -26,8 +25,6 @@ export const useVideogames = () => {
 export const VideogameProvider = ({ children }) => {
   const [videogames, setVideogames] = useState([]);
 
-  const navigate = useNavigate();
-
   const createVideogame = async (videogame) => {
     const data = await createVideogameRequest(videogame);
     setVideogames([...videogames, data]);
@@ -49,7 +46,6 @@ export const VideogameProvider = ({ children }) => {
       setVideogames(data);
     } catch (error) {
       ToastError("error", error.message);
-      navigate("/");
     }
   };
 
