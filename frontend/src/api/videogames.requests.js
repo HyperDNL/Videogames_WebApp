@@ -1,11 +1,29 @@
 import axios from "axios";
 
 export const createVideogameRequest = async (videogame) => {
-  const { data } = await axios.post(
-    `http://localhost:4000/api/videogames`,
-    videogame
-  );
-  return data;
+  try {
+    const { data } = await axios.post(
+      `http://localhost:4000/api/videogames`,
+      videogame
+    );
+    return data;
+  } catch (error) {
+    if (error.response) {
+      const { data } = error.response;
+      if (data.errors) {
+        throw data.errors;
+      } else if (data.message) {
+        throw new Error(data.message);
+      }
+      throw new Error(`Error: ${error.message}`);
+    } else if (error.request) {
+      throw new Error("No response received from the server");
+    } else {
+      throw new Error(
+        `Error occurred while making the request: ${error.message}`
+      );
+    }
+  }
 };
 
 export const getVideogamesRequest = async () => {
@@ -29,7 +47,10 @@ export const getVideogamesByQueryRequest = async (field, value) => {
   } catch (error) {
     if (error.response) {
       const { data } = error.response;
-      throw new Error(data.message);
+      if (data.message) {
+        throw new Error(data.message);
+      }
+      throw new Error(`Error: ${error.message}`);
     } else if (error.request) {
       throw new Error("No response received from the server");
     } else {
