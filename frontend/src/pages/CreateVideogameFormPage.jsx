@@ -6,6 +6,7 @@ import Input from "../components/Input";
 import Select from "../components/Select";
 import Button from "../components/Button";
 import SecondaryButton from "../components/SecondaryButton";
+import DangerButton from "../components/DangerButton";
 
 const Container = styled.div`
   margin: 16px;
@@ -34,6 +35,25 @@ const Label = styled.label`
     flex-direction: column;
     align-items: flex-start;
     margin-bottom: 16px;
+  }
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  @media (max-width: 767px) {
+    & > * {
+      margin-bottom: 8px;
+    }
   }
 `;
 
@@ -131,6 +151,18 @@ const CreateVideogameFormPage = () => {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handleReset = () => {
+    setTitle("");
+    setDescription("");
+    setDevelopers([""]);
+    setPlatforms([]);
+    setGenres([]);
+    setYear("");
+    setCover(null);
+    setLandscape(null);
+    setThumbnails([]);
   };
 
   return (
@@ -233,7 +265,12 @@ const CreateVideogameFormPage = () => {
             />
           </Label>
 
-          <Button type="submit">Create</Button>
+          <ButtonContainer>
+            <Button type="submit">Create</Button>
+            <DangerButton type="button" onClick={handleReset}>
+              Reset
+            </DangerButton>
+          </ButtonContainer>
         </Form>
       </FormContainer>
     </Container>
