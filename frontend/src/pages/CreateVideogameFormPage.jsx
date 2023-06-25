@@ -79,6 +79,29 @@ const Label = styled.label`
   }
 `;
 
+const Select = styled.select`
+  padding: 8px;
+  border: 1px solid #3b88c3;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 100%;
+  margin-bottom: 8px;
+  background-color: #24282b;
+  color: #a8acaf;
+  transition: border-color 0.3s ease-in-out;
+  box-sizing: border-box;
+  height: auto;
+
+  &:focus {
+    border-color: #5fa4d6;
+    outline: none;
+  }
+`;
+
+const Option = styled.option`
+  color: #a8acaf;
+`;
+
 const Container = styled.div`
   margin: 16px;
 `;
@@ -96,14 +119,54 @@ const Form = styled.form`
   max-width: 800px;
 `;
 
+const platformsOptions = [
+  "PS1",
+  "PS2",
+  "PS3",
+  "PS4",
+  "PS5",
+  "PSP",
+  "PS Vita",
+  "Xbox",
+  "Xbox 360",
+  "Xbox One",
+  "Xbox Series X|S",
+  "Wii",
+  "Wii U",
+  "Nintendo DS",
+  "Nintendo DSi",
+  "Nintendo 2D",
+  "Nintendo 3DS",
+  "Nintendo Switch",
+  "Amazon Luna",
+  "PC",
+];
+
+const genreOptions = [
+  "Acción",
+  "Arcade",
+  "Aventura",
+  "Carreras",
+  "Deporte",
+  "Disparos",
+  "Estrategia",
+  "Plataformas",
+  "Puzzle",
+  "RPG",
+  "Sandbox",
+  "Simulación",
+  "Supervivencia",
+  "Terror",
+];
+
 const CreateVideogameFormPage = () => {
   const { createVideogame } = useVideogames();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [developers, setDevelopers] = useState([""]);
-  const [platforms, setPlatforms] = useState([""]);
-  const [genres, setGenres] = useState([""]);
+  const [platforms, setPlatforms] = useState([]);
+  const [genres, setGenres] = useState([]);
   const [year, setYear] = useState("");
   const [cover, setCover] = useState(null);
   const [landscape, setLandscape] = useState(null);
@@ -166,6 +229,18 @@ const CreateVideogameFormPage = () => {
     setThumbnails(files);
   };
 
+  const handlePlatformChange = (e) => {
+    const selectedOptions = Array.from(e.target.selectedOptions);
+    const selectedValues = selectedOptions.map((option) => option.value);
+    setPlatforms(selectedValues);
+  };
+
+  const handleGenreChange = (e) => {
+    const selectedOptions = Array.from(e.target.selectedOptions);
+    const selectedValues = selectedOptions.map((option) => option.value);
+    setGenres(selectedValues);
+  };
+
   return (
     <Container>
       <FormContainer>
@@ -211,40 +286,24 @@ const CreateVideogameFormPage = () => {
 
           <Label>
             <span>Platforms:</span>
-            {platforms.map((platform, index) => (
-              <Input
-                key={index}
-                type="text"
-                placeholder="Platform"
-                value={platform}
-                onChange={(e) => handleInputChange(index, setPlatforms, e)}
-              />
-            ))}
-            <SecondaryButton
-              type="button"
-              onClick={() => handleAddInput(setPlatforms)}
-            >
-              Add Platform
-            </SecondaryButton>
+            <Select multiple value={platforms} onChange={handlePlatformChange}>
+              {platformsOptions.map((platform) => (
+                <Option key={platform} value={platform}>
+                  {platform}
+                </Option>
+              ))}
+            </Select>
           </Label>
 
           <Label>
             <span>Genres:</span>
-            {genres.map((genre, index) => (
-              <Input
-                key={index}
-                type="text"
-                placeholder="Genre"
-                value={genre}
-                onChange={(e) => handleInputChange(index, setGenres, e)}
-              />
-            ))}
-            <SecondaryButton
-              type="button"
-              onClick={() => handleAddInput(setGenres)}
-            >
-              Add Genre
-            </SecondaryButton>
+            <Select multiple value={genres} onChange={handleGenreChange}>
+              {genreOptions.map((genre) => (
+                <Option key={genre} value={genre}>
+                  {genre}
+                </Option>
+              ))}
+            </Select>
           </Label>
 
           <Label>
