@@ -33,7 +33,7 @@ export const VideogameProvider = ({ children }) => {
       if (Array.isArray(error)) {
         error.map(({ error }, i) => ToastError(i, error));
       } else {
-        ToastError("error", error.message);
+        ToastError("errorCreate", error.message);
       }
     }
   };
@@ -53,7 +53,7 @@ export const VideogameProvider = ({ children }) => {
       const data = await getVideogamesByQueryRequest(field, value);
       setVideogames(data);
     } catch (error) {
-      ToastError("error", error.message);
+      ToastError("errorGetByQuery", error.message);
     }
   };
 
