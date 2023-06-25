@@ -1,106 +1,11 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import { useVideogames } from "../context/videogamesContext";
-
-const Input = styled.input`
-  padding: 8px;
-  border: 1px solid #3b88c3;
-  border-radius: 4px;
-  font-size: 16px;
-  width: 100%;
-  margin-bottom: 8px;
-  background-color: #24282b;
-  color: #a8acaf;
-  transition: border-color 0.3s ease-in-out;
-  box-sizing: border-box;
-
-  &:focus {
-    border-color: #5fa4d6;
-    outline: none;
-  }
-
-  &::placeholder {
-    color: #a8acaf;
-  }
-`;
-
-const Button = styled.button`
-  padding: 8px 16px;
-  background-color: #3b88c3;
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease-in-out;
-  width: 100%;
-
-  &:hover {
-    background-color: #5fa4d6;
-  }
-
-  @media (min-width: 768px) {
-    padding: 8px 12px;
-    max-width: 200px;
-  }
-`;
-
-const SecondaryButton = styled.button`
-  padding: 8px 16px;
-  background-color: #707b7c;
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease-in-out;
-  width: 100%;
-
-  &:hover {
-    background-color: #95a0a1;
-  }
-
-  @media (min-width: 768px) {
-    padding: 8px 12px;
-    max-width: 200px;
-  }
-`;
-
-const Label = styled.label`
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 16px;
-  width: 100%;
-
-  @media (min-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 16px;
-  }
-`;
-
-const Select = styled.select`
-  padding: 8px;
-  border: 1px solid #3b88c3;
-  border-radius: 4px;
-  font-size: 16px;
-  width: 100%;
-  margin-bottom: 8px;
-  background-color: #24282b;
-  color: #a8acaf;
-  transition: border-color 0.3s ease-in-out;
-  box-sizing: border-box;
-  height: auto;
-
-  &:focus {
-    border-color: #5fa4d6;
-    outline: none;
-  }
-`;
-
-const Option = styled.option`
-  color: #a8acaf;
-`;
+import useFormHandlers from "../hooks/useFormHandlers";
+import Input from "../components/Input";
+import Select from "../components/Select";
+import Button from "../components/Button";
+import SecondaryButton from "../components/SecondaryButton";
 
 const Container = styled.div`
   margin: 16px;
@@ -117,6 +22,19 @@ const Form = styled.form`
   align-items: center;
   width: 100%;
   max-width: 800px;
+`;
+
+const Label = styled.label`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  width: 100%;
+
+  @media (min-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
 `;
 
 const platformsOptions = [
@@ -172,6 +90,15 @@ const CreateVideogameFormPage = () => {
   const [landscape, setLandscape] = useState(null);
   const [thumbnails, setThumbnails] = useState([]);
 
+  const {
+    handleAddInput,
+    handleSingleInputChange,
+    handleMultipleInputChange,
+    handleFileChange,
+    handleFilesChange,
+    handleSelectChange,
+  } = useFormHandlers();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -206,41 +133,6 @@ const CreateVideogameFormPage = () => {
     }
   };
 
-  const handleAddInput = (setState) => {
-    setState((prev) => [...prev, ""]);
-  };
-
-  const handleInputChange = (index, setState, e) => {
-    const value = e.target.value;
-    setState((prev) => {
-      const newState = [...prev];
-      newState[index] = value;
-      return newState;
-    });
-  };
-
-  const handleFileChange = (setState, e) => {
-    const file = e.target.files[0];
-    setState(file);
-  };
-
-  const handleThumbnailChange = (e) => {
-    const files = Array.from(e.target.files);
-    setThumbnails(files);
-  };
-
-  const handlePlatformChange = (e) => {
-    const selectedOptions = Array.from(e.target.selectedOptions);
-    const selectedValues = selectedOptions.map((option) => option.value);
-    setPlatforms(selectedValues);
-  };
-
-  const handleGenreChange = (e) => {
-    const selectedOptions = Array.from(e.target.selectedOptions);
-    const selectedValues = selectedOptions.map((option) => option.value);
-    setGenres(selectedValues);
-  };
-
   return (
     <Container>
       <FormContainer>
@@ -251,7 +143,7 @@ const CreateVideogameFormPage = () => {
               type="text"
               placeholder="Videogame title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => handleSingleInputChange(setTitle, e)}
             />
           </Label>
 
@@ -261,7 +153,7 @@ const CreateVideogameFormPage = () => {
               type="text"
               placeholder="Videogame description"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => handleSingleInputChange(setDescription, e)}
             />
           </Label>
 
@@ -273,7 +165,9 @@ const CreateVideogameFormPage = () => {
                 type="text"
                 placeholder="Developer"
                 value={developer}
-                onChange={(e) => handleInputChange(index, setDevelopers, e)}
+                onChange={(e) =>
+                  handleMultipleInputChange(index, setDevelopers, e)
+                }
               />
             ))}
             <SecondaryButton
@@ -286,24 +180,22 @@ const CreateVideogameFormPage = () => {
 
           <Label>
             <span>Platforms:</span>
-            <Select multiple value={platforms} onChange={handlePlatformChange}>
-              {platformsOptions.map((platform) => (
-                <Option key={platform} value={platform}>
-                  {platform}
-                </Option>
-              ))}
-            </Select>
+            <Select
+              multiple
+              value={platforms}
+              onChange={(e) => handleSelectChange(setPlatforms, e)}
+              options={platformsOptions}
+            />
           </Label>
 
           <Label>
             <span>Genres:</span>
-            <Select multiple value={genres} onChange={handleGenreChange}>
-              {genreOptions.map((genre) => (
-                <Option key={genre} value={genre}>
-                  {genre}
-                </Option>
-              ))}
-            </Select>
+            <Select
+              multiple
+              value={genres}
+              onChange={(e) => handleSelectChange(setGenres, e)}
+              options={genreOptions}
+            />
           </Label>
 
           <Label>
@@ -312,7 +204,7 @@ const CreateVideogameFormPage = () => {
               type="text"
               placeholder="Release year"
               value={year}
-              onChange={(e) => setYear(e.target.value)}
+              onChange={(e) => handleSingleInputChange(setYear, e)}
             />
           </Label>
 
@@ -334,7 +226,11 @@ const CreateVideogameFormPage = () => {
 
           <Label>
             <span>Thumbnails:</span>
-            <Input type="file" multiple onChange={handleThumbnailChange} />
+            <Input
+              type="file"
+              multiple
+              onChange={(e) => handleFilesChange(setThumbnails, e)}
+            />
           </Label>
 
           <Button type="submit">Create</Button>
