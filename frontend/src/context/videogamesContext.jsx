@@ -26,8 +26,16 @@ export const VideogameProvider = ({ children }) => {
   const [videogames, setVideogames] = useState([]);
 
   const createVideogame = async (videogame) => {
-    const data = await createVideogameRequest(videogame);
-    setVideogames([...videogames, data]);
+    try {
+      const data = await createVideogameRequest(videogame);
+      setVideogames([...videogames, data]);
+    } catch (error) {
+      if (Array.isArray(error)) {
+        error.map(({ error }, i) => ToastError(i, error));
+      } else {
+        ToastError("error", error.message);
+      }
+    }
   };
 
   const getVideogames = async () => {
