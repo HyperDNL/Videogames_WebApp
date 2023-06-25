@@ -9,7 +9,7 @@ import {
   deleteVideogameRequest,
   deleteThumbnailRequest,
 } from "../api/videogames.requests";
-import { ToastError } from "../resources/ToastMessages";
+import { ToastError, ToastSuccess } from "../resources/ToastMessages";
 
 const videogamesContext = createContext();
 
@@ -29,11 +29,12 @@ export const VideogameProvider = ({ children }) => {
     try {
       const data = await createVideogameRequest(videogame);
       setVideogames([...videogames, data]);
+      ToastSuccess("successfullyCreated", "Videogame created successfully");
     } catch (error) {
       if (Array.isArray(error)) {
         error.map(({ error }, i) => ToastError(i, error));
       } else {
-        ToastError("errorCreate", error.message);
+        ToastError("failedToCreate", error.message);
       }
     }
   };
