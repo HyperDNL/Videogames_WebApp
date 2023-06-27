@@ -68,7 +68,7 @@ const platformsOptions = [
   "Xbox",
   "Xbox 360",
   "Xbox One",
-  "Xbox Series X|S",
+  "Xbox Series",
   "Wii",
   "Wii U",
   "Nintendo DS",
