@@ -248,7 +248,6 @@ export const getVideogamesSorted = async (req, res) => {
 
     res.json(formattedVideogames);
   } catch (error) {
-    console.error(error);
     res
       .status(500)
       .json({ message: `Internal Server Error: ${error.message}` });
