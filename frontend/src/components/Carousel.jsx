@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 const CarouselContainer = styled.div`
@@ -18,7 +18,6 @@ const NavigationButton = styled.button`
   background-color: #ffffff;
   border: none;
   font-size: 20px;
-  color: black;
   z-index: 1;
   border-radius: 50%;
   width: 40px;
@@ -36,9 +35,20 @@ const NextButton = styled(NavigationButton)`
   right: 10px;
 `;
 
-const CarouselImage = styled.img`
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`;
+
+const Thumbnail = styled.img`
   width: 100%;
   max-width: 1200px;
+  display: ${({ index, current }) => (index === current ? "block" : "none")};
+  animation: ${fadeIn} 0.3s ease-in-out;
 `;
 
 const Carousel = ({ thumbnails }) => {
@@ -64,10 +74,15 @@ const Carousel = ({ thumbnails }) => {
       <NextButton onClick={goToNextSlide}>
         <FiChevronRight color="#1E2124" />
       </NextButton>
-      <CarouselImage
-        src={thumbnails[currentIndex].thumbnail}
-        alt={`Thumbnail ${currentIndex + 1}`}
-      />
+      {thumbnails.map(({ thumbnail }, index) => (
+        <Thumbnail
+          key={index}
+          src={thumbnail}
+          alt={`Thumbnail ${index + 1}`}
+          index={index}
+          current={currentIndex}
+        />
+      ))}
     </CarouselContainer>
   );
 };
