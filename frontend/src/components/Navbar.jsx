@@ -102,10 +102,10 @@ const Navbar = ({ routes }) => {
         {isMenuOpen ? <FaTimes /> : <FaBars />}
       </MenuButton>
       <NavMenu isopen={isMenuOpen.toString()}>
-        {routes.map((route, index) => (
+        {routes.map(({ route, name }, index) => (
           <NavItem key={index}>
-            <NavLink to={route.route} onClick={handleNavLinkClick}>
-              {route.name}
+            <NavLink to={route} onClick={handleNavLinkClick}>
+              {name}
             </NavLink>
           </NavItem>
         ))}
