@@ -47,7 +47,7 @@ const fadeIn = keyframes`
 const Thumbnail = styled.img`
   width: 100%;
   max-width: 1200px;
-  display: ${({ index, current }) => (index === current ? "block" : "none")};
+  display: ${({ active }) => (active === "true" ? "block" : "none")};
   animation: ${fadeIn} 0.3s ease-in-out;
 `;
 
@@ -79,8 +79,7 @@ const Carousel = ({ thumbnails }) => {
           key={index}
           src={thumbnail}
           alt={`Thumbnail ${index + 1}`}
-          index={index}
-          current={currentIndex}
+          active={(index === currentIndex).toString()}
         />
       ))}
     </CarouselContainer>
