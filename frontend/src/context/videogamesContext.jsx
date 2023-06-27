@@ -40,13 +40,21 @@ export const VideogameProvider = ({ children }) => {
   };
 
   const getVideogames = async () => {
-    const data = await getVideogamesRequest();
-    setVideogames(data);
+    try {
+      const data = await getVideogamesRequest();
+      setVideogames(data);
+    } catch (error) {
+      ToastError("errorGetVideogames", error.message);
+    }
   };
 
   const getVideogamesSorted = async (field, order) => {
-    const data = await getVideogamesSortedRequest(field, order);
-    setVideogames(data);
+    try {
+      const data = await getVideogamesSortedRequest(field, order);
+      setVideogames(data);
+    } catch (error) {
+      ToastError("errorGetVideogamesSorted", error.message);
+    }
   };
 
   const getVideogamesByQuery = async (field, value) => {
@@ -59,39 +67,59 @@ export const VideogameProvider = ({ children }) => {
   };
 
   const getVideogame = async (id) => {
-    const data = await getVideogameRequest(id);
-    return data;
+    try {
+      const data = await getVideogameRequest(id);
+      return data;
+    } catch (error) {
+      ToastError("errorGetVideogame", error.message);
+    }
   };
 
   const updateVideogame = async (id, newFields) => {
-    const data = await updateVideogameRequest(id, newFields);
-    setVideogames(
-      videogames.map((videogame) => (videogame._id === id ? data : videogame))
-    );
+    try {
+      const data = await updateVideogameRequest(id, newFields);
+      setVideogames(
+        videogames.map((videogame) => (videogame._id === id ? data : videogame))
+      );
+    } catch (error) {
+      if (Array.isArray(error)) {
+        error.map(({ error }, i) => ToastError(i, error));
+      } else {
+        ToastError("failedToUpdate", error.message);
+      }
+    }
   };
 
   const deleteVideogame = async (id) => {
-    const status = await deleteVideogameRequest(id);
-    if (status === 204) {
-      setVideogames(videogames.filter(({ _id }) => _id !== id));
+    try {
+      const status = await deleteVideogameRequest(id);
+      if (status === 204) {
+        setVideogames(videogames.filter(({ _id }) => _id !== id));
+      }
+    } catch (error) {
+      ToastError("failedToDeleteVideogame", error.message);
     }
   };
 
   const deleteThumbnail = async (idVideogame, idThumbnail) => {
-    const status = await deleteThumbnailRequest(idVideogame, idThumbnail);
-    if (status === 204) {
-      setVideogames((videogames) =>
-        videogames.map((videogame) =>
-          videogame._id === idVideogame
-            ? {
-                ...videogame,
-                thumbnails: videogame.thumbnails.filter(
-                  (thumbnail) => thumbnail._id !== idThumbnail
-                ),
-              }
-            : videogame
-        )
-      );
+    try {
+      const status = await deleteThumbnailRequest(idVideogame, idThumbnail);
+      if (status === 204) {
+        setVideogames((videogames) =>
+          videogames.map((videogame) =>
+            videogame._id === idVideogame
+              ? {
+                  ...videogame,
+                  thumbnails: videogame.thumbnails.filter(
+                    (thumbnail) => thumbnail._id !== idThumbnail
+                  ),
+                }
+              : videogame
+          )
+        );
+      }
+    } catch (error) {
+      ToastError("failedToDeleteThumbnail", error.message);
     }
   };
 
