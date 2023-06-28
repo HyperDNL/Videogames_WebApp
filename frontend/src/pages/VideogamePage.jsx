@@ -6,20 +6,35 @@ import Carousel from "../components/Carousel";
 import Loader from "../components/Loader";
 
 const Container = styled.div`
-  padding: 16px;
+  padding: 0;
 `;
 
 const Title = styled.h1`
+  margin: 0;
   font-size: 38px;
-  margin: 16px;
 
   @media (max-width: 768px) {
     font-size: 24px;
   }
 `;
 
+const Subtitle = styled.h2`
+  margin: 0;
+  font-size: 28px;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 18px;
+  }
+`;
+
 const Section = styled.h4`
   margin: 0;
+  font-size: 18px;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
 `;
 
 const Developer = styled.li`
@@ -36,6 +51,7 @@ const Platform = styled.li`
   border-radius: 5px;
   padding: 5px;
   margin: 0;
+  font-size: 18px;
 
   @media (max-width: 768px) {
     font-size: 10px;
@@ -44,15 +60,26 @@ const Platform = styled.li`
 
 const Genre = styled.li`
   margin: 0;
+  text-align: left;
+  font-size: 18px;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
 `;
 
-const Year = styled.p`
+const InfoText = styled.p`
   margin: 0;
+  text-align: left;
+  font-size: 18px;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
 `;
 
-const Description = styled.p`
-  margin: 0;
-  text-align: justify;
+const BoldText = styled.span`
+  font-weight: bold;
 `;
 
 const LinkItem = styled(Link)`
@@ -120,8 +147,29 @@ const TextContainer = styled.div`
   text-align: center;
 `;
 
+const SectionContainer = styled.div`
+  margin: 16px;
+`;
+
+const InfoContainer = styled.div`
+  background-color: #24282b;
+  padding: 8px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 4px;
+  }
+`;
+
 const ParagraphContainer = styled.div`
-  margin: 16px 0 16px 0;
+  margin: 8px;
+
+  @media (max-width: 768px) {
+    padding: 4px;
+  }
 `;
 
 const CenteredCarouselContainer = styled.div`
@@ -182,8 +230,10 @@ const VideogamePage = () => {
         <Image src={covers.landscape.url} alt="Landscape" />
         <Overlay />
         <TextContainer>
-          <Title>{title}</Title>
-          <ParagraphContainer>
+          <SectionContainer>
+            <Title>{title}</Title>
+          </SectionContainer>
+          <SectionContainer>
             <DeveloperList>
               {developers.map(({ developer }, index) => (
                 <Developer key={index}>
@@ -195,8 +245,8 @@ const VideogamePage = () => {
                 </Developer>
               ))}
             </DeveloperList>
-          </ParagraphContainer>
-          <ParagraphContainer>
+          </SectionContainer>
+          <SectionContainer>
             <PlatformList>
               {platforms.map(({ platform }, index) => (
                 <Platform key={index}>
@@ -208,32 +258,45 @@ const VideogamePage = () => {
                 </Platform>
               ))}
             </PlatformList>
-          </ParagraphContainer>
+          </SectionContainer>
         </TextContainer>
       </ImageContainer>
-      <ParagraphContainer>
-        <Description>{description}</Description>
-      </ParagraphContainer>
-      <ParagraphContainer>
-        <Section>Genre (s):</Section>
-        <GenreList>
-          {genres.map(({ genre }, index) => (
-            <Genre key={index}>
-              <LinkItem to={`/?searchBy=genre&q=${transformString(genre)}`}>
-                {genre}
-              </LinkItem>
-            </Genre>
-          ))}
-        </GenreList>
-      </ParagraphContainer>
-      <ParagraphContainer>
-        <Year>
-          Year: <LinkItem to={`/?searchBy=year&q=${year}`}>{year}</LinkItem>
-        </Year>
-      </ParagraphContainer>
-      <CenteredCarouselContainer>
-        <Carousel thumbnails={thumbnails} />
-      </CenteredCarouselContainer>
+      <SectionContainer>
+        <Subtitle>Game Information</Subtitle>
+      </SectionContainer>
+      <SectionContainer>
+        <InfoContainer>
+          <ParagraphContainer>
+            <InfoText>{description}</InfoText>
+          </ParagraphContainer>
+          <ParagraphContainer>
+            <Section>Genre (s):</Section>
+            <GenreList>
+              {genres.map(({ genre }, index) => (
+                <Genre key={index}>
+                  <LinkItem to={`/?searchBy=genre&q=${transformString(genre)}`}>
+                    {genre}
+                  </LinkItem>
+                </Genre>
+              ))}
+            </GenreList>
+          </ParagraphContainer>
+          <ParagraphContainer>
+            <InfoText>
+              <BoldText>Release year: </BoldText>
+              <LinkItem to={`/?searchBy=year&q=${year}`}>{year}</LinkItem>
+            </InfoText>
+          </ParagraphContainer>
+        </InfoContainer>
+      </SectionContainer>
+      <SectionContainer>
+        <Subtitle>Thumbnails</Subtitle>
+      </SectionContainer>
+      <SectionContainer>
+        <CenteredCarouselContainer>
+          <Carousel thumbnails={thumbnails} />
+        </CenteredCarouselContainer>
+      </SectionContainer>
     </Container>
   );
 };
