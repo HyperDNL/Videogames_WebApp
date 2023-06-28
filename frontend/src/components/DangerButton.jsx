@@ -8,6 +8,7 @@ const DangerButtonField = styled.button`
   border: none;
   border-radius: 4px;
   font-size: 16px;
+  font-family: "Roboto", sans-serif;
   cursor: pointer;
   transition: background-color 0.3s ease-in-out;
   width: 100%;
