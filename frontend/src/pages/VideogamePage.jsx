@@ -158,6 +158,7 @@ const InfoContainer = styled.div`
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
+  box-shadow: 0px 0px 10px #131619;
 
   @media (max-width: 768px) {
     padding: 4px;
@@ -170,6 +171,11 @@ const ParagraphContainer = styled.div`
   @media (max-width: 768px) {
     padding: 4px;
   }
+`;
+
+const CarouselContainer = styled.div`
+  background-color: #131619;
+  box-shadow: 0px 0px 10px #131619;
 `;
 
 const CenteredCarouselContainer = styled.div`
@@ -294,7 +300,9 @@ const VideogamePage = () => {
       </SectionContainer>
       <SectionContainer>
         <CenteredCarouselContainer>
-          <Carousel thumbnails={thumbnails} />
+          <CarouselContainer>
+            <Carousel thumbnails={thumbnails} />
+          </CarouselContainer>
         </CenteredCarouselContainer>
       </SectionContainer>
     </Container>
