@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useVideogames } from "../context/videogamesContext";
 import useFormHandlers from "../hooks/useFormHandlers";
 import Input from "../components/Input";
+import TextArea from "../components/TextArea";
 import Select from "../components/Select";
 import Button from "../components/Button";
 import SecondaryButton from "../components/SecondaryButton";
@@ -181,9 +182,9 @@ const CreateVideogameFormPage = () => {
 
           <Label>
             <span>Description:</span>
-            <Input
-              type="text"
+            <TextArea
               placeholder="Videogame description"
+              rows={4}
               value={description}
               onChange={(e) => handleSingleInputChange(setDescription, e)}
             />
