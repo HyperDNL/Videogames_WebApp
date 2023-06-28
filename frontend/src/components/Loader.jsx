@@ -14,17 +14,17 @@ const LoaderContainer = styled.div`
 `;
 
 const CircleLoader = styled.div`
-  border: ${({ borderWidth }) => borderWidth}px solid #ffffff;
-  border-top: ${({ borderWidth }) => borderWidth}px solid #3b88c3;
+  border: ${({ width }) => width}px solid #ffffff;
+  border-top: ${({ width }) => width}px solid #3b88c3;
   border-radius: 50%;
   width: ${({ size }) => size}px;
   height: ${({ size }) => size}px;
   animation: ${spinAnimation} 1s linear infinite;
 `;
 
-const Loader = ({ size = 50, borderWidth = 4 }) => (
+const Loader = ({ size = 50, width = 4 }) => (
   <LoaderContainer>
-    <CircleLoader size={size} borderWidth={borderWidth} />
+    <CircleLoader size={size} width={width} />
   </LoaderContainer>
 );
 
