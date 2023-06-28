@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import styled from "styled-components";
 import { useVideogames } from "../context/videogamesContext";
 import Carousel from "../components/Carousel";
@@ -9,13 +9,55 @@ const Container = styled.div`
   padding: 16px;
 `;
 
-const Title = styled.h2`
-  font-size: 24px;
-  margin-bottom: 10px;
+const Title = styled.h1`
+  font-size: 38px;
+  margin: 16px;
+
+  @media (max-width: 768px) {
+    font-size: 24px;
+  }
+`;
+
+const Section = styled.h4`
+  margin: 0;
+`;
+
+const Developer = styled.li`
+  font-size: 26px;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
+`;
+
+const Platform = styled.li`
+  border: 1px solid #ffffff;
+  border-radius: 5px;
+  padding: 5px;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 10px;
+  }
+`;
+
+const Genre = styled.li`
+  margin: 0;
+`;
+
+const Year = styled.p`
+  margin: 0;
 `;
 
 const Description = styled.p`
-  margin-bottom: 20px;
+  margin: 0;
+  text-align: justify;
+`;
+
+const LinkItem = styled(Link)`
+  text-decoration: none;
+  color: #ffffff;
 `;
 
 const List = styled.ul`
@@ -24,13 +66,62 @@ const List = styled.ul`
   padding: 0;
 `;
 
-const ListItem = styled.li`
-  margin-bottom: 5px;
+const DeveloperList = styled(List)`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+`;
+
+const PlatformList = styled(List)`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+`;
+
+const GenreList = styled(List)`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 `;
 
 const Image = styled.img`
-  max-width: 100%;
-  margin-bottom: 10px;
+  height: 60vh;
+  width: 100%;
+  object-fit: cover;
+
+  @media (max-width: 768px) {
+    height: 40vh;
+  }
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+`;
+
+const ImageContainer = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const TextContainer = styled.div`
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  text-align: center;
+`;
+
+const ParagraphContainer = styled.div`
+  margin: 16px 0 16px 0;
 `;
 
 const CenteredCarouselContainer = styled.div`
@@ -46,7 +137,7 @@ const CenteredLoaderContainer = styled.div`
   height: 50vh;
 `;
 
-const VideogameDetailsPage = () => {
+const VideogamePage = () => {
   const { id } = useParams();
   const { getVideogame } = useVideogames();
   const [videogame, setVideogame] = useState(null);
@@ -68,48 +159,83 @@ const VideogameDetailsPage = () => {
     );
   }
 
+  const transformString = (string) => {
+    let toLower = string.toLowerCase();
+    let newString = toLower.replace(/ /g, "+");
+    return newString;
+  };
+
+  const {
+    title,
+    description,
+    developers,
+    platforms,
+    genres,
+    year,
+    covers,
+    thumbnails,
+  } = videogame;
+
   return (
     <Container>
-      <div>
-        <div>
-          <Image src={videogame.covers.landscape.url} alt="Landscape" />
-        </div>
-      </div>
-      <Title>{videogame.title}</Title>
-      <Description>{videogame.description}</Description>
-      <div>
-        <h4>Developer (s):</h4>
-        <List>
-          {videogame.developers.map((developer, index) => (
-            <ListItem key={index}>{developer.developer}</ListItem>
+      <ImageContainer>
+        <Image src={covers.landscape.url} alt="Landscape" />
+        <Overlay />
+        <TextContainer>
+          <Title>{title}</Title>
+          <ParagraphContainer>
+            <DeveloperList>
+              {developers.map(({ developer }, index) => (
+                <Developer key={index}>
+                  <LinkItem
+                    to={`/?searchBy=developer&q=${transformString(developer)}`}
+                  >
+                    {developer}
+                  </LinkItem>
+                </Developer>
+              ))}
+            </DeveloperList>
+          </ParagraphContainer>
+          <ParagraphContainer>
+            <PlatformList>
+              {platforms.map(({ platform }, index) => (
+                <Platform key={index}>
+                  <LinkItem
+                    to={`/?searchBy=platform&q=${transformString(platform)}`}
+                  >
+                    {platform}
+                  </LinkItem>
+                </Platform>
+              ))}
+            </PlatformList>
+          </ParagraphContainer>
+        </TextContainer>
+      </ImageContainer>
+      <ParagraphContainer>
+        <Description>{description}</Description>
+      </ParagraphContainer>
+      <ParagraphContainer>
+        <Section>Genre (s):</Section>
+        <GenreList>
+          {genres.map(({ genre }, index) => (
+            <Genre key={index}>
+              <LinkItem to={`/?searchBy=genre&q=${transformString(genre)}`}>
+                {genre}
+              </LinkItem>
+            </Genre>
           ))}
-        </List>
-      </div>
-      <div>
-        <h4>Platform (s):</h4>
-        <List>
-          {videogame.platforms.map((platform, index) => (
-            <ListItem key={index}>{platform.platform}</ListItem>
-          ))}
-        </List>
-      </div>
-      <div>
-        <h4>Genre (s):</h4>
-        <List>
-          {videogame.genres.map((genre, index) => (
-            <ListItem key={index}>{genre.genre}</ListItem>
-          ))}
-        </List>
-      </div>
-      <p>Year: {videogame.year}</p>
-      <div>
-        <h4>Thumbnails:</h4>
-        <CenteredCarouselContainer>
-          <Carousel thumbnails={videogame.thumbnails} />
-        </CenteredCarouselContainer>
-      </div>
+        </GenreList>
+      </ParagraphContainer>
+      <ParagraphContainer>
+        <Year>
+          Year: <LinkItem to={`/?searchBy=year&q=${year}`}>{year}</LinkItem>
+        </Year>
+      </ParagraphContainer>
+      <CenteredCarouselContainer>
+        <Carousel thumbnails={thumbnails} />
+      </CenteredCarouselContainer>
     </Container>
   );
 };
 
-export default VideogameDetailsPage;
+export default VideogamePage;
