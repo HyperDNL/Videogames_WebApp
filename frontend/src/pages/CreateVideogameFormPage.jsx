@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import styled from "styled-components";
 import { useVideogames } from "../context/videogamesContext";
 import useFormHandlers from "../hooks/useFormHandlers";
@@ -110,6 +110,7 @@ const CreateVideogameFormPage = () => {
   const [cover, setCover] = useState(null);
   const [landscape, setLandscape] = useState(null);
   const [thumbnails, setThumbnails] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const {
     handleAddInput,
@@ -120,8 +121,12 @@ const CreateVideogameFormPage = () => {
     handleSelectChange,
   } = useFormHandlers();
 
+  const formRef = useRef(null);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setLoading(true);
 
     const formData = new FormData();
     formData.append("title", title);
@@ -149,12 +154,13 @@ const CreateVideogameFormPage = () => {
 
     try {
       await createVideogame(formData);
-    } catch (error) {
-      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleReset = () => {
+    formRef.current.reset();
     setTitle("");
     setDescription("");
     setDevelopers([""]);
@@ -169,7 +175,7 @@ const CreateVideogameFormPage = () => {
   return (
     <Container>
       <FormContainer>
-        <Form onSubmit={handleSubmit}>
+        <Form ref={formRef} onSubmit={handleSubmit}>
           <Label>
             <span>Title:</span>
             <Input
@@ -267,8 +273,14 @@ const CreateVideogameFormPage = () => {
           </Label>
 
           <ButtonContainer>
-            <Button type="submit">Create</Button>
-            <DangerButton type="button" onClick={handleReset}>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Sending" : "Create"}
+            </Button>
+            <DangerButton
+              type="button"
+              onClick={handleReset}
+              disabled={loading}
+            >
               Reset
             </DangerButton>
           </ButtonContainer>
