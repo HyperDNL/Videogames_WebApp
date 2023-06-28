@@ -23,9 +23,9 @@ const SecondaryButtonField = styled.button`
   }
 `;
 
-const SecondaryButton = ({ type, onClick, children }) => {
+const SecondaryButton = ({ type, onClick, disabled, children }) => {
   return (
-    <SecondaryButtonField type={type} onClick={onClick}>
+    <SecondaryButtonField type={type} onClick={onClick} disabled={disabled}>
       {children}
     </SecondaryButtonField>
   );

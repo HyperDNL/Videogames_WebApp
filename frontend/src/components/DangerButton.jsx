@@ -23,9 +23,9 @@ const DangerButtonField = styled.button`
   }
 `;
 
-const DangerButton = ({ type, onClick, children }) => {
+const DangerButton = ({ type, onClick, disabled, children }) => {
   return (
-    <DangerButtonField type={type} onClick={onClick}>
+    <DangerButtonField type={type} onClick={onClick} disabled={disabled}>
       {children}
     </DangerButtonField>
   );

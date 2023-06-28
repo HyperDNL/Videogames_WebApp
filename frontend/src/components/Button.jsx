@@ -23,9 +23,9 @@ const ButtonField = styled.button`
   }
 `;
 
-const Button = ({ type, onClick, children }) => {
+const Button = ({ type, onClick, disabled, children }) => {
   return (
-    <ButtonField type={type} onClick={onClick}>
+    <ButtonField type={type} onClick={onClick} disabled={disabled}>
       {children}
     </ButtonField>
   );
