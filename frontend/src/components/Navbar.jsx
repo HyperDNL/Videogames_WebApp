@@ -53,8 +53,8 @@ const NavMenu = styled.ul`
     height: 100vh;
     background-color: #131619;
     padding: 16px;
-    transform: ${({ isopen }) =>
-      isopen === "true" ? "translateX(0)" : "translateX(100%)"};
+    transform: ${({ $isopen }) =>
+      $isopen === "true" ? "translateX(0)" : "translateX(100%)"};
     transition: transform 0.3s ease-in-out;
     z-index: 998;
   }
@@ -101,7 +101,7 @@ const Navbar = ({ routes }) => {
       <MenuButton onClick={handleMenuClick}>
         {isMenuOpen ? <FaTimes /> : <FaBars />}
       </MenuButton>
-      <NavMenu isopen={isMenuOpen.toString()}>
+      <NavMenu $isopen={isMenuOpen.toString()}>
         {routes.map(({ route, name }, index) => (
           <NavItem key={index}>
             <NavLink to={route} onClick={handleNavLinkClick}>
