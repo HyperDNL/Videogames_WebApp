@@ -295,16 +295,20 @@ const VideogamePage = () => {
           </ParagraphContainer>
         </InfoContainer>
       </SectionContainer>
-      <SectionContainer>
-        <Subtitle>Thumbnails</Subtitle>
-      </SectionContainer>
-      <SectionContainer>
-        <CenteredCarouselContainer>
-          <CarouselContainer>
-            <Carousel thumbnails={thumbnails} />
-          </CarouselContainer>
-        </CenteredCarouselContainer>
-      </SectionContainer>
+      {thumbnails.length > 0 && (
+        <>
+          <SectionContainer>
+            <Subtitle>Thumbnails</Subtitle>
+          </SectionContainer>
+          <SectionContainer>
+            <CenteredCarouselContainer>
+              <CarouselContainer>
+                <Carousel thumbnails={thumbnails} />
+              </CarouselContainer>
+            </CenteredCarouselContainer>
+          </SectionContainer>
+        </>
+      )}
     </Container>
   );
 };
