@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useVideogames } from "../context/videogamesContext";
 import Cover from "../components/Cover";
+import Loader from "../components/Loader";
 
 const CoverGrid = styled.div`
   display: grid;
@@ -128,8 +129,17 @@ const NotFoundMessage = styled.p`
   }
 `;
 
+const CenteredLoaderContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+`;
+
 const VideogamesPage = () => {
   const { videogames, getVideogames, getVideogamesByQuery } = useVideogames();
+
+  const [loading, setLoading] = useState(true);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -145,14 +155,20 @@ const VideogamesPage = () => {
   const [query, setQuery] = useState(searchQuery || "");
 
   useEffect(() => {
-    if (searchQuery && searchBy) {
-      if (!searchByOptions.includes(searchBy)) {
-        setField(searchByOptions[0]);
+    const fetchVideogames = async () => {
+      if (searchQuery && searchBy) {
+        if (!searchByOptions.includes(searchBy)) {
+          setField(searchByOptions[0]);
+        }
+        await getVideogamesByQuery(searchBy, searchQuery);
+      } else {
+        await getVideogames();
       }
-      getVideogamesByQuery(searchBy, searchQuery);
-    } else {
-      getVideogames();
-    }
+
+      setLoading(false);
+    };
+
+    fetchVideogames();
   }, [searchBy, searchQuery]);
 
   const handleSearch = () => {
@@ -192,8 +208,12 @@ const VideogamesPage = () => {
         />
         <Button onClick={handleSearch}>Search</Button>
       </FormContainer>
-      {videogames.length === 0 ? (
-        <NotFoundMessage>There are no Videogames</NotFoundMessage>
+      {loading ? (
+        <CenteredLoaderContainer>
+          <Loader />
+        </CenteredLoaderContainer>
+      ) : videogames.length === 0 ? (
+        <NotFoundMessage>There are no Videogames</NotFoundMessage> // Muestra el mensaje si no hay videojuegos
       ) : (
         <CoverGrid>
           {videogames.map(({ _id, covers }) => (
