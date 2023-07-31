@@ -6,13 +6,21 @@ import {
   validateNumberField,
   validateArrayField,
   validateArrayElements,
+  arraysAreEqual,
 } from "../libs/validators.js";
+import {
+  getExtension,
+  isValidImageExtension,
+  getFileSizeInMB,
+} from "../libs/imagesHandling.js";
+import { MAX_IMAGE_SIZE_MB } from "../config/config.js";
 
 export const createVideogame = async (req, res) => {
   try {
     const { body, files } = req;
 
     const { title, description, year, developers, platforms, genres } = body;
+
     const developersData = developers
       ? validateArrayField(developers)
         ? developers
@@ -44,37 +52,37 @@ export const createVideogame = async (req, res) => {
       });
     }
 
-    if (!validateStringField(title)) {
+    if (title && !validateStringField(title)) {
       errors.push({
         error: "Invalid data type in Title. Expected string.",
       });
     }
 
-    if (!validateStringField(description)) {
+    if (description && !validateStringField(description)) {
       errors.push({
         error: "Invalid data type in Description. Expected string.",
       });
     }
 
-    if (!validateNumberField(year)) {
+    if (year && !validateNumberField(year)) {
       errors.push({
         error: "Invalid data type in Year. Expected number.",
       });
     }
 
-    if (!validateArrayElements(developersData)) {
+    if (developersData && !validateArrayElements(developersData)) {
       errors.push({
         error: "Invalid data type in Developers. Expected array of strings.",
       });
     }
 
-    if (!validateArrayElements(platformsData)) {
+    if (platformsData && !validateArrayElements(platformsData)) {
       errors.push({
         error: "Invalid data type in Platforms. Expected array of strings.",
       });
     }
 
-    if (!validateArrayElements(genresData)) {
+    if (genresData && !validateArrayElements(genresData)) {
       errors.push({
         error: "Invalid data type in Genres. Expected array of strings.",
       });
@@ -84,37 +92,130 @@ export const createVideogame = async (req, res) => {
       errors.push({ error: "Cover and landscape images are required" });
     }
 
+    let squareCoverResult, landscapeCoverResult, thumbnailResults;
+
+    let coverToUpload = null;
+    let landscapeToUpload = null;
+    const thumbnailsToUpload = [];
+
+    if (files && files.cover && files.landscape) {
+      const { cover, landscape } = files;
+
+      const coverExtension = getExtension(cover.name);
+      const landscapeExtension = getExtension(landscape.name);
+
+      if (!isValidImageExtension(coverExtension)) {
+        errors.push({
+          error:
+            "Invalid cover type. Only JPG, PNG, and WebP images are allowed.",
+        });
+      }
+
+      if (!isValidImageExtension(landscapeExtension)) {
+        errors.push({
+          error:
+            "Invalid landscape type. Only JPG, PNG, and WebP images are allowed.",
+        });
+      }
+
+      const coverSize = getFileSizeInMB(cover.size);
+      const landscapeSize = getFileSizeInMB(landscape.size);
+
+      if (coverSize > MAX_IMAGE_SIZE_MB) {
+        errors.push({
+          error: `Cover size exceeds the maximum allowed (${MAX_IMAGE_SIZE_MB}MB).`,
+        });
+      }
+
+      if (landscapeSize > MAX_IMAGE_SIZE_MB) {
+        errors.push({
+          error: `Landscape size exceeds the maximum allowed (${MAX_IMAGE_SIZE_MB}MB).`,
+        });
+      }
+
+      coverToUpload = cover.tempFilePath;
+      landscapeToUpload = landscape.tempFilePath;
+    }
+
+    if (files && files.thumbnails) {
+      const { thumbnails } = files;
+
+      if (validateArrayField(thumbnails)) {
+        thumbnails.forEach(({ name, size, tempFilePath }) => {
+          const thumbnailExtension = getExtension(name);
+          if (!isValidImageExtension(thumbnailExtension)) {
+            errors.push({
+              error: `Invalid thumbnail type (${name}). Only JPG, PNG, and WebP images are allowed.`,
+            });
+          }
+
+          const thumbnailSize = getFileSizeInMB(size);
+          if (thumbnailSize > MAX_IMAGE_SIZE_MB) {
+            errors.push({
+              error: `Thumbnail size (${name}) exceeds the maximum allowed (${MAX_IMAGE_SIZE_MB}MB).`,
+            });
+          }
+
+          thumbnailsToUpload.push({ tempFilePath });
+        });
+      } else {
+        const { name, size, tempFilePath } = thumbnails;
+
+        const thumbnailExtension = getExtension(name);
+        if (!isValidImageExtension(thumbnailExtension)) {
+          errors.push({
+            error: `Invalid thumbnail type (${name}). Only JPG, PNG, and WebP images are allowed.`,
+          });
+        }
+
+        const thumbnailSize = getFileSizeInMB(size);
+        if (thumbnailSize > MAX_IMAGE_SIZE_MB) {
+          errors.push({
+            error: `Thumbnail size (${name}) exceeds the maximum allowed (${MAX_IMAGE_SIZE_MB}MB).`,
+          });
+        }
+
+        thumbnailsToUpload.push({ tempFilePath });
+      }
+    }
+
     if (errors.length > 0) {
       return res.status(400).json({ errors });
     }
 
-    const { cover, landscape, thumbnails } = files;
+    if (coverToUpload !== null && landscapeToUpload !== null) {
+      try {
+        squareCoverResult = await uploadImage(coverToUpload);
+        landscapeCoverResult = await uploadImage(landscapeToUpload);
 
-    let squareCoverResult, landscapeCoverResult, thumbnailResults;
-
-    squareCoverResult = await uploadImage(cover.tempFilePath);
-    landscapeCoverResult = await uploadImage(landscape.tempFilePath);
-
-    await fs.remove(cover.tempFilePath);
-    await fs.remove(landscape.tempFilePath);
-
-    if (thumbnails) {
-      if (validateArrayField(thumbnails)) {
-        thumbnailResults = await Promise.all(
-          thumbnails.map(async (thumbnail) => {
-            const thumbnailResult = await uploadImage(thumbnail.tempFilePath);
-            await fs.remove(thumbnail.tempFilePath);
-            return thumbnailResult;
-          })
-        );
-      } else {
-        const thumbnailResult = await uploadImage(thumbnails.tempFilePath);
-        await fs.remove(thumbnails.tempFilePath);
-        thumbnailResults = [thumbnailResult];
+        await fs.remove(coverToUpload);
+        await fs.remove(landscapeToUpload);
+      } catch (error) {
+        const { message } = error;
+        return res.status(500).json({
+          message: `Error uploading cover and landscape images: ${message}`,
+        });
       }
     }
 
-    const newVideogame = new Videogame({
+    if (thumbnailsToUpload.length > 0) {
+      try {
+        thumbnailResults = await Promise.all(
+          thumbnailsToUpload.map(async ({ tempFilePath }) => {
+            const thumbnailResult = await uploadImage(tempFilePath);
+            await fs.remove(tempFilePath);
+            return thumbnailResult;
+          })
+        );
+      } catch (error) {
+        const { message } = error;
+        return res.status(500).json({
+          message: `Error uploading thumbnails: ${message}`,
+        });
+      }
+    }
+
+    const newVideogame = await Videogame.create({
       title,
       description,
       developers: developersData.map((developer) => ({ developer })),
@@ -132,20 +233,19 @@ export const createVideogame = async (req, res) => {
         },
       },
       thumbnails: thumbnailResults
-        ? thumbnailResults.map((thumbnailResult) => ({
-            thumbnail: thumbnailResult.secure_url,
-            public_id: thumbnailResult.public_id,
+        ? thumbnailResults.map(({ secure_url, public_id }) => ({
+            thumbnail: secure_url,
+            public_id,
           }))
         : [],
     });
 
-    await newVideogame.save();
-
     res.status(201).json(newVideogame);
   } catch (error) {
+    const { message } = error;
     return res
       .status(500)
-      .json({ message: `Internal Server Error: ${error.message}` });
+      .json({ message: `Internal Server Error: ${message}` });
   }
 };
 
@@ -181,9 +281,10 @@ export const getVideogames = async (req, res) => {
 
     return res.status(200).json(formattedVideogames);
   } catch (error) {
+    const { message } = error;
     return res
       .status(500)
-      .json({ message: `Internal Server Error: ${error.message}` });
+      .json({ message: `Internal Server Error: ${message}` });
   }
 };
 
@@ -248,9 +349,10 @@ export const getVideogamesSorted = async (req, res) => {
 
     res.json(formattedVideogames);
   } catch (error) {
-    res
+    const { message } = error;
+    return res
       .status(500)
-      .json({ message: `Internal Server Error: ${error.message}` });
+      .json({ message: `Internal Server Error: ${message}` });
   }
 };
 
@@ -329,9 +431,10 @@ export const searchByQuery = async (req, res) => {
 
     res.json(formattedVideogames);
   } catch (error) {
+    const { message } = error;
     return res
       .status(500)
-      .json({ message: `Internal Server Error: ${error.message}` });
+      .json({ message: `Internal Server Error: ${message}` });
   }
 };
 
@@ -371,9 +474,10 @@ export const getVideogame = async (req, res) => {
 
     return res.status(200).json(formattedVideogame);
   } catch (error) {
+    const { message } = error;
     return res
       .status(500)
-      .json({ message: `Internal Server Error: ${error.message}` });
+      .json({ message: `Internal Server Error: ${message}` });
   }
 };
 
@@ -383,6 +487,7 @@ export const updateVideogame = async (req, res) => {
     const { id } = params;
 
     const { title, description, year, developers, platforms, genres } = body;
+
     const developersData = developers
       ? validateArrayField(developers)
         ? developers
@@ -420,119 +525,257 @@ export const updateVideogame = async (req, res) => {
       });
     }
 
-    if (!validateStringField(title)) {
+    if (title && !validateStringField(title)) {
       errors.push({
         error: "Invalid data type in Title. Expected string.",
       });
     }
 
-    if (!validateStringField(description)) {
+    if (description && !validateStringField(description)) {
       errors.push({
         error: "Invalid data type in Description. Expected string.",
       });
     }
 
-    if (!validateNumberField(year)) {
+    if (year && !validateNumberField(year)) {
       errors.push({
         error: "Invalid data type in Year. Expected number.",
       });
     }
 
-    if (!validateArrayElements(developersData)) {
+    if (developersData && !validateArrayElements(developersData)) {
       errors.push({
         error: "Invalid data type in Developers. Expected array of strings.",
       });
     }
 
-    if (!validateArrayElements(platformsData)) {
+    if (platformsData && !validateArrayElements(platformsData)) {
       errors.push({
         error: "Invalid data type in Platforms. Expected array of strings.",
       });
     }
 
-    if (!validateArrayElements(genresData)) {
+    if (genresData && !validateArrayElements(genresData)) {
       errors.push({
         error: "Invalid data type in Genres. Expected array of strings.",
       });
     }
 
-    if (errors.length > 0) {
-      return res.status(400).json({ errors });
+    const updateValues = {};
+
+    if (title && title !== videogame.title) {
+      updateValues.title = title;
+    }
+
+    if (description && description !== videogame.description) {
+      updateValues.description = description;
+    }
+
+    if (year && year !== videogame.year) {
+      updateValues.year = year;
+    }
+
+    if (developers) {
+      if (
+        !arraysAreEqual(
+          developersData,
+          videogame.developers.map(({ developer }) => developer)
+        )
+      ) {
+        updateValues.developers = developersData.map((developer) => ({
+          developer,
+        }));
+      }
+    }
+
+    if (platforms) {
+      if (
+        !arraysAreEqual(
+          platformsData,
+          videogame.platforms.map(({ platform }) => platform)
+        )
+      ) {
+        updateValues.platforms = platformsData.map((platform) => ({
+          platform,
+        }));
+      }
+    }
+
+    if (genres) {
+      if (
+        !arraysAreEqual(
+          genresData,
+          videogame.genres.map(({ genre }) => genre)
+        )
+      ) {
+        updateValues.genres = genresData.map((genre) => ({ genre }));
+      }
     }
 
     let squareCoverResult, landscapeCoverResult, thumbnailResults;
 
-    if (files && files.cover && files.landscape) {
-      await deleteImage(videogame.covers.cover.public_id);
-      await deleteImage(videogame.covers.landscape.public_id);
+    let coverToUpload = null;
+    let landscapeToUpload = null;
+    const thumbnailsToUpload = [];
 
+    if (files && files.cover && files.landscape) {
       const { cover, landscape } = files;
 
-      squareCoverResult = await uploadImage(cover.tempFilePath);
-      landscapeCoverResult = await uploadImage(landscape.tempFilePath);
+      const coverExtension = getExtension(cover.name);
+      const landscapeExtension = getExtension(landscape.name);
 
-      await Promise.all([
-        fs.remove(cover.tempFilePath),
-        fs.remove(landscape.tempFilePath),
-      ]);
-    } else {
-      squareCoverResult = videogame.covers.cover;
-      landscapeCoverResult = videogame.covers.landscape;
+      if (!isValidImageExtension(coverExtension)) {
+        errors.push({
+          error:
+            "Invalid cover type. Only JPG, PNG, and WebP images are allowed.",
+        });
+      }
+
+      if (!isValidImageExtension(landscapeExtension)) {
+        errors.push({
+          error:
+            "Invalid landscape type. Only JPG, PNG, and WebP images are allowed.",
+        });
+      }
+
+      const coverSize = getFileSizeInMB(cover.size);
+      const landscapeSize = getFileSizeInMB(landscape.size);
+
+      if (coverSize > MAX_IMAGE_SIZE_MB) {
+        errors.push({
+          error: `Cover size exceeds the maximum allowed (${MAX_IMAGE_SIZE_MB}MB).`,
+        });
+      }
+
+      if (landscapeSize > MAX_IMAGE_SIZE_MB) {
+        errors.push({
+          error: `Landscape size exceeds the maximum allowed (${MAX_IMAGE_SIZE_MB}MB).`,
+        });
+      }
+
+      coverToUpload = cover.tempFilePath;
+      landscapeToUpload = landscape.tempFilePath;
     }
 
     if (files && files.thumbnails) {
       const { thumbnails } = files;
 
       if (validateArrayField(thumbnails)) {
+        thumbnails.forEach(({ name, size, tempFilePath }) => {
+          const thumbnailExtension = getExtension(name);
+          if (!isValidImageExtension(thumbnailExtension)) {
+            errors.push({
+              error: `Invalid thumbnail type (${name}). Only JPG, PNG, and WebP images are allowed.`,
+            });
+          }
+
+          const thumbnailSize = getFileSizeInMB(size);
+          if (thumbnailSize > MAX_IMAGE_SIZE_MB) {
+            errors.push({
+              error: `Thumbnail size (${name}) exceeds the maximum allowed (${MAX_IMAGE_SIZE_MB}MB).`,
+            });
+          }
+
+          thumbnailsToUpload.push({ tempFilePath });
+        });
+      } else {
+        const { name, size, tempFilePath } = thumbnails;
+
+        const thumbnailExtension = getExtension(name);
+        if (!isValidImageExtension(thumbnailExtension)) {
+          errors.push({
+            error: `Invalid thumbnail type (${name}). Only JPG, PNG, and WebP images are allowed.`,
+          });
+        }
+
+        const thumbnailSize = getFileSizeInMB(size);
+        if (thumbnailSize > MAX_IMAGE_SIZE_MB) {
+          errors.push({
+            error: `Thumbnail size (${name}) exceeds the maximum allowed (${MAX_IMAGE_SIZE_MB}MB).`,
+          });
+        }
+
+        thumbnailsToUpload.push({ tempFilePath });
+      }
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({ errors });
+    }
+
+    if (coverToUpload !== null && landscapeToUpload !== null) {
+      try {
+        if (
+          videogame.covers.cover.public_id &&
+          videogame.covers.landscape.public_id
+        ) {
+          await deleteImage(videogame.covers.cover.public_id);
+          await deleteImage(videogame.covers.landscape.public_id);
+        }
+
+        squareCoverResult = await uploadImage(coverToUpload);
+        landscapeCoverResult = await uploadImage(landscapeToUpload);
+
+        await fs.remove(coverToUpload);
+        await fs.remove(landscapeToUpload);
+
+        updateValues.covers = {
+          cover: {
+            url: squareCoverResult.url,
+            public_id: squareCoverResult.public_id,
+          },
+          landscape: {
+            url: landscapeCoverResult.url,
+            public_id: landscapeCoverResult.public_id,
+          },
+        };
+      } catch (error) {
+        const { message } = error;
+        return res.status(500).json({
+          message: `Error uploading cover and landscape images: ${message}`,
+        });
+      }
+    }
+
+    if (thumbnailsToUpload.length > 0) {
+      try {
         thumbnailResults = await Promise.all(
-          files.thumbnails.map(async (thumbnail) => {
-            const thumbnailResult = await uploadImage(thumbnail.tempFilePath);
-            await fs.remove(thumbnail.tempFilePath);
+          thumbnailsToUpload.map(async ({ tempFilePath }) => {
+            const thumbnailResult = await uploadImage(tempFilePath);
+            await fs.remove(tempFilePath);
             return thumbnailResult;
           })
         );
-      } else {
-        const thumbnailResult = await uploadImage(
-          files.thumbnails.tempFilePath
-        );
-        await fs.remove(files.thumbnails.tempFilePath);
-        thumbnailResults = [thumbnailResult];
-      }
-    } else {
-      thumbnailResults = videogame.thumbnails;
-    }
 
-    const updatedVideogame = {
-      title,
-      description,
-      developers: developersData.map((developer) => ({ developer })),
-      platforms: platformsData.map((platform) => ({ platform })),
-      genres: genresData.map((genre) => ({ genre })),
-      year,
-      covers: {
-        cover: {
-          url: squareCoverResult.url,
-          public_id: squareCoverResult.public_id,
-        },
-        landscape: {
-          url: landscapeCoverResult.url,
-          public_id: landscapeCoverResult.public_id,
-        },
-      },
-      thumbnails: [...videogame.thumbnails, ...(thumbnailResults || [])],
-    };
+        updateValues.thumbnails = [
+          ...videogame.thumbnails,
+          ...(thumbnailResults
+            ? thumbnailResults.map(({ secure_url, public_id }) => ({
+                thumbnail: secure_url,
+                public_id,
+              }))
+            : []),
+        ];
+      } catch (error) {
+        const { message } = error;
+        return res.status(500).json({
+          message: `Error uploading thumbnails: ${message}`,
+        });
+      }
+    }
 
     const updatedVideogameDocument = await Videogame.findByIdAndUpdate(
       id,
-      updatedVideogame,
+      updateValues,
       { new: true }
     );
 
     res.json(updatedVideogameDocument);
   } catch (error) {
+    const { message } = error;
     return res
       .status(500)
-      .json({ message: `Internal Server Error: ${error.message}` });
+      .json({ message: `Internal Server Error: ${message}` });
   }
 };
 
@@ -546,19 +789,36 @@ export const deleteVideogame = async (req, res) => {
     if (!videogame)
       return res.status(404).json({ message: "Videogame not found" });
 
-    await deleteImage(videogame.covers.cover.public_id);
-    await deleteImage(videogame.covers.landscape.public_id);
+    try {
+      await deleteImage(videogame.covers.cover.public_id);
+      await deleteImage(videogame.covers.landscape.public_id);
+    } catch (error) {
+      const { message } = error;
+      return res.status(500).json({
+        message: `Error deleting cover and landscape images: ${message}`,
+      });
+    }
 
-    const thumbnailDeletionPromises = videogame.thumbnails.map((thumbnail) =>
-      deleteImage(thumbnail.public_id)
-    );
-    await Promise.all(thumbnailDeletionPromises);
+    if (videogame.thumbnails && videogame.thumbnails.length > 0) {
+      try {
+        const thumbnailDeletionPromises = videogame.thumbnails.map(
+          ({ public_id }) => deleteImage(public_id)
+        );
+        await Promise.all(thumbnailDeletionPromises);
+      } catch (error) {
+        const { message } = error;
+        return res
+          .status(500)
+          .json({ message: `Error deleting thumbnails: ${message}` });
+      }
+    }
 
     res.sendStatus(204);
   } catch (error) {
+    const { message } = error;
     return res
       .status(500)
-      .json({ message: `Internal Server Error: ${error.message}` });
+      .json({ message: `Internal Server Error: ${message}` });
   }
 };
 
@@ -581,18 +841,26 @@ export const deleteThumbnail = async (req, res) => {
       return res.status(404).json({ message: "Thumbnail not found" });
     }
 
-    const { public_id } = videogame.thumbnails[thumbnailIndex];
+    try {
+      const { public_id } = videogame.thumbnails[thumbnailIndex];
 
-    await deleteImage(public_id);
+      await deleteImage(public_id);
 
-    videogame.thumbnails.splice(thumbnailIndex, 1);
+      videogame.thumbnails.splice(thumbnailIndex, 1);
 
-    await videogame.save();
+      await videogame.save();
 
-    res.sendStatus(204);
+      res.json({ message: "Thumbnail deleted successfully" });
+    } catch (error) {
+      const { message } = error;
+      return res
+        .status(500)
+        .json({ message: `Error deleting thumbnail: ${message}` });
+    }
   } catch (error) {
+    const { message } = error;
     return res
       .status(500)
-      .json({ message: `Internal Server Error: ${error.message}` });
+      .json({ message: `Internal Server Error: ${message}` });
   }
 };
