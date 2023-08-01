@@ -7,6 +7,7 @@ import {
   validateArrayField,
   validateArrayElements,
   arraysAreEqual,
+  validateObjectIdField,
 } from "../libs/validators.js";
 import {
   getExtension,
@@ -443,6 +444,20 @@ export const getVideogame = async (req, res) => {
     const { params } = req;
     const { id } = params;
 
+    const errors = [];
+
+    if (!id) {
+      errors.push({ error: "The ID parameter is required" });
+    }
+
+    if (!validateObjectIdField(id)) {
+      errors.push({ error: "Invalid data type in ID. Expected ObjectId." });
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({ errors });
+    }
+
     const videogame = await Videogame.findById(id);
 
     if (!videogame)
@@ -784,6 +799,20 @@ export const deleteVideogame = async (req, res) => {
     const { params } = req;
     const { id } = params;
 
+    const errors = [];
+
+    if (!id) {
+      errors.push({ error: "The ID parameter is required" });
+    }
+
+    if (!validateObjectIdField(id)) {
+      errors.push({ error: "Invalid data type in ID. Expected ObjectId." });
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({ errors });
+    }
+
     const videogame = await Videogame.findByIdAndDelete(id);
 
     if (!videogame)
@@ -826,6 +855,30 @@ export const deleteThumbnail = async (req, res) => {
   try {
     const { params } = req;
     const { id, thumbnailId } = params;
+
+    const errors = [];
+
+    if (!id) {
+      errors.push({ error: "The ID parameter is required" });
+    }
+
+    if (!thumbnailId) {
+      errors.push({ error: "The Thumbnail ID parameter is required" });
+    }
+
+    if (!validateObjectIdField(id)) {
+      errors.push({ error: "Invalid data type in ID. Expected ObjectId." });
+    }
+
+    if (!validateObjectIdField(thumbnailId)) {
+      errors.push({
+        error: "Invalid data type in Thumbnail ID. Expected ObjectId.",
+      });
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({ errors });
+    }
 
     const videogame = await Videogame.findById(id);
 
