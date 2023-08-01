@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export const validateStringField = (value) => {
   return typeof value === "string";
 };
@@ -13,6 +15,10 @@ export const validateArrayField = (value) => {
 
 export const validateArrayElements = (array) => {
   return array.every((item) => validateStringField(item));
+};
+
+export const validateObjectIdField = (id) => {
+  return mongoose.Types.ObjectId.isValid(id);
 };
 
 export const arraysAreEqual = (array1, array2) => {
