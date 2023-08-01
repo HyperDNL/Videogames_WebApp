@@ -9,7 +9,8 @@ export const createVideogameRequest = async (videogame) => {
     return data;
   } catch (error) {
     if (error.response) {
-      const { data } = error.response;
+      const { response } = error;
+      const { data } = response;
       if (data.errors) {
         throw data.errors;
       } else if (data.message) {
@@ -101,8 +102,11 @@ export const getVideogameRequest = async (id) => {
     return data;
   } catch (error) {
     if (error.response) {
-      const { data } = error.response;
-      if (data.message) {
+      const { response } = error;
+      const { data } = response;
+      if (data.errors) {
+        throw data.errors;
+      } else if (data.message) {
         throw new Error(data.message);
       }
       throw new Error(`Error: ${error.message}`);
@@ -150,8 +154,11 @@ export const deleteVideogameRequest = async (id) => {
     return status;
   } catch (error) {
     if (error.response) {
-      const { data } = error.response;
-      if (data.message) {
+      const { response } = error;
+      const { data } = response;
+      if (data.errors) {
+        throw data.errors;
+      } else if (data.message) {
         throw new Error(data.message);
       }
       throw new Error(`Error: ${error.message}`);
@@ -173,8 +180,11 @@ export const deleteThumbnailRequest = async (idVideogame, idThumbnail) => {
     return status;
   } catch (error) {
     if (error.response) {
-      const { data } = error.response;
-      if (data.message) {
+      const { response } = error;
+      const { data } = response;
+      if (data.errors) {
+        throw data.errors;
+      } else if (data.message) {
         throw new Error(data.message);
       }
       throw new Error(`Error: ${error.message}`);

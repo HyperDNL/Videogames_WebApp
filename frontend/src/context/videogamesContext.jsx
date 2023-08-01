@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   createVideogameRequest,
   getVideogamesRequest,
@@ -17,7 +18,7 @@ export const useVideogames = () => {
   const context = useContext(videogamesContext);
 
   if (!context)
-    throw new Error("useVideogames must be used within a VideogameProvider");
+    throw new Error("useVideogames must be used within a Videogame Provider");
 
   return context;
 };
@@ -25,16 +26,21 @@ export const useVideogames = () => {
 export const VideogameProvider = ({ children }) => {
   const [videogames, setVideogames] = useState([]);
 
+  const navigate = useNavigate();
+
   const createVideogame = async (videogame) => {
     try {
       const data = await createVideogameRequest(videogame);
+
       setVideogames([...videogames, data]);
+
       ToastSuccess("successfullyCreated", "Videogame created successfully");
     } catch (error) {
+      const { message } = error;
       if (Array.isArray(error)) {
         error.map(({ error }, i) => ToastError(i, error));
       } else {
-        ToastError("failedToCreate", error.message);
+        ToastError("failedToCreate", message);
       }
     }
   };
@@ -42,50 +48,64 @@ export const VideogameProvider = ({ children }) => {
   const getVideogames = async () => {
     try {
       const data = await getVideogamesRequest();
+
       setVideogames(data);
     } catch (error) {
-      ToastError("errorGetVideogames", error.message);
+      const { message } = error;
+      ToastError("errorGetVideogames", message);
     }
   };
 
   const getVideogamesSorted = async (field, order) => {
     try {
       const data = await getVideogamesSortedRequest(field, order);
+
       setVideogames(data);
     } catch (error) {
-      ToastError("errorGetVideogamesSorted", error.message);
+      const { message } = error;
+      ToastError("errorGetVideogamesSorted", message);
     }
   };
 
   const getVideogamesByQuery = async (field, value) => {
     try {
       const data = await getVideogamesByQueryRequest(field, value);
+
       setVideogames(data);
     } catch (error) {
-      ToastError("errorGetByQuery", error.message);
+      const { message } = error;
+      ToastError("errorGetByQuery", message);
     }
   };
 
   const getVideogame = async (id) => {
     try {
       const data = await getVideogameRequest(id);
+
       return data;
     } catch (error) {
-      ToastError("errorGetVideogame", error.message);
+      const { message } = error;
+      if (Array.isArray(error)) {
+        error.map(({ error }, i) => ToastError(i, error));
+      } else {
+        ToastError("errorGetVideogame", message);
+      }
     }
   };
 
   const updateVideogame = async (id, newFields) => {
     try {
       const data = await updateVideogameRequest(id, newFields);
+
       setVideogames(
         videogames.map((videogame) => (videogame._id === id ? data : videogame))
       );
     } catch (error) {
+      const { message } = error;
       if (Array.isArray(error)) {
         error.map(({ error }, i) => ToastError(i, error));
       } else {
-        ToastError("failedToUpdate", error.message);
+        ToastError("failedToUpdate", message);
       }
     }
   };
@@ -93,17 +113,28 @@ export const VideogameProvider = ({ children }) => {
   const deleteVideogame = async (id) => {
     try {
       const status = await deleteVideogameRequest(id);
+
       if (status === 204) {
         setVideogames(videogames.filter(({ _id }) => _id !== id));
       }
+
+      navigate("/");
+
+      ToastSuccess("deletedSuccesfully", "Videogame deleted successfully");
     } catch (error) {
-      ToastError("failedToDeleteVideogame", error.message);
+      const { message } = error;
+      if (Array.isArray(error)) {
+        error.map(({ error }, i) => ToastError(i, error));
+      } else {
+        ToastError("failedToDeleteVideogame", message);
+      }
     }
   };
 
   const deleteThumbnail = async (idVideogame, idThumbnail) => {
     try {
       const status = await deleteThumbnailRequest(idVideogame, idThumbnail);
+
       if (status === 204) {
         setVideogames((videogames) =>
           videogames.map((videogame) =>
@@ -119,7 +150,12 @@ export const VideogameProvider = ({ children }) => {
         );
       }
     } catch (error) {
-      ToastError("failedToDeleteThumbnail", error.message);
+      const { message } = error;
+      if (Array.isArray(error)) {
+        error.map(({ error }, i) => ToastError(i, error));
+      } else {
+        ToastError("failedToDeleteThumbnail", message);
+      }
     }
   };
 
