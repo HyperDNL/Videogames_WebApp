@@ -116,13 +116,19 @@ const Button = styled.button`
   }
 `;
 
-const NotFoundMessage = styled.p`
-  color: #ff3b30;
-  font-size: 24px;
+const NotFoundContainer = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 50vh;
+`;
+
+const NotFoundMessage = styled.p`
+  color: #ff3b30;
+  font-size: 24px;
+  padding: 0;
+  margin: 0;
 
   @media (max-width: 768px) {
     font-size: 16px;
@@ -213,7 +219,9 @@ const VideogamesPage = () => {
           <Loader />
         </CenteredLoaderContainer>
       ) : videogames.length === 0 ? (
-        <NotFoundMessage>There are no Videogames</NotFoundMessage> // Muestra el mensaje si no hay videojuegos
+        <NotFoundContainer>
+          <NotFoundMessage>No Videogames</NotFoundMessage>
+        </NotFoundContainer>
       ) : (
         <CoverGrid>
           {videogames.map(({ _id, covers }) => (
