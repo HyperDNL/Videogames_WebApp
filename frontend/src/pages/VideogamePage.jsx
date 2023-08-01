@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import styled from "styled-components";
+import toast from "react-hot-toast";
 import { useVideogames } from "../context/videogamesContext";
 import Carousel from "../components/Carousel";
 import Loader from "../components/Loader";
+import DangerButton from "../components/DangerButton";
+import ToastDelete from "../components/ToastDelete";
 
 const Container = styled.div`
   padding: 0;
@@ -191,25 +194,83 @@ const CenteredLoaderContainer = styled.div`
   height: 50vh;
 `;
 
+const NotFoundContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+`;
+
+const NotFoundMessage = styled.p`
+  color: #ff3b30;
+  font-size: 24px;
+  padding: 0;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+`;
+
+const HomeLink = styled(Link)`
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 16px;
+  font-family: "Roboto", sans-serif;
+  margin-top: 20px;
+  display: block;
+  padding: 8px 16px;
+  background-color: #3b88c3;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+
+  &:hover {
+    background-color: #5fa4d6;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+    padding: 8px 12px;
+    max-width: 200px;
+  }
+`;
+
 const VideogamePage = () => {
   const { id } = useParams();
-  const { getVideogame } = useVideogames();
+  const { getVideogame, deleteVideogame } = useVideogames();
   const [videogame, setVideogame] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchVideogame = async () => {
-      const data = await getVideogame(id);
-      setVideogame(data);
+      try {
+        const data = await getVideogame(id);
+        setVideogame(data);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchVideogame();
   }, [getVideogame, id]);
 
-  if (!videogame) {
+  if (loading) {
     return (
       <CenteredLoaderContainer>
         <Loader />
       </CenteredLoaderContainer>
+    );
+  }
+
+  if (!videogame) {
+    return (
+      <NotFoundContainer>
+        <NotFoundMessage>No Videogame</NotFoundMessage>
+        <HomeLink to="/">Go back to Home</HomeLink>
+      </NotFoundContainer>
     );
   }
 
@@ -229,6 +290,27 @@ const VideogamePage = () => {
     covers,
     thumbnails,
   } = videogame;
+
+  const handleDeleteVideogame = (id) => {
+    toast(
+      ({ id: idToast }) => (
+        <ToastDelete
+          idToast={idToast}
+          idVideogame={id}
+          deleteVideogame={deleteVideogame}
+        />
+      ),
+      {
+        duration: 0,
+        position: "top-center",
+        style: {
+          background: "#24282B",
+          padding: "16px",
+          borderRadius: "5px",
+        },
+      }
+    );
+  };
 
   return (
     <Container>
@@ -309,6 +391,9 @@ const VideogamePage = () => {
           </SectionContainer>
         </>
       )}
+      <DangerButton onClick={() => handleDeleteVideogame(id)}>
+        Delete Videogame
+      </DangerButton>
     </Container>
   );
 };
