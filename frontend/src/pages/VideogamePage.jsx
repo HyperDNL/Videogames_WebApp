@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import toast from "react-hot-toast";
+import { HiOutlineDotsVertical } from "react-icons/hi";
 import { useVideogames } from "../context/videogamesContext";
 import Carousel from "../components/Carousel";
 import Loader from "../components/Loader";
-import DangerButton from "../components/DangerButton";
 import ToastDelete from "../components/ToastDelete";
 
 const Container = styled.div`
@@ -238,11 +238,67 @@ const HomeLink = styled(Link)`
   }
 `;
 
+const OptionsButton = styled.button`
+  font-size: 18px;
+  background-color: transparent;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  padding: 8px;
+  margin: 0;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+`;
+
+const OptionsMenu = styled.ul`
+  list-style: none;
+  padding: 8px;
+  margin: 0;
+  position: absolute;
+  top: 64px;
+  right: 16px;
+  background-color: #24282b;
+  border-radius: 4px;
+  box-shadow: 0px 0px 10px #131619;
+  display: ${({ open }) => (open ? "block" : "none")};
+  z-index: 10;
+`;
+
+const OptionsMenuItem = styled.li`
+  padding: 8px;
+  font-size: 16px;
+  border-radius: 4px;
+  color: #ffffff;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #5fa4d6;
+  }
+`;
+
+const Divider = styled.div`
+  height: 1px;
+  width: 100%;
+  background-color: #707b7c;
+`;
+
 const VideogamePage = () => {
   const { id } = useParams();
   const { getVideogame, deleteVideogame } = useVideogames();
   const [videogame, setVideogame] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isOptionsMenuOpen, setOptionsMenuOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchVideogame = async () => {
@@ -312,11 +368,37 @@ const VideogamePage = () => {
     );
   };
 
+  const toggleOptionsMenu = () => {
+    setOptionsMenuOpen(!isOptionsMenuOpen);
+  };
+
   return (
     <Container>
       <ImageContainer>
         <Image src={covers.landscape.url} alt="Landscape" />
         <Overlay />
+        <OptionsButton onClick={toggleOptionsMenu}>
+          <HiOutlineDotsVertical size={24} />
+        </OptionsButton>
+        <OptionsMenu open={isOptionsMenuOpen}>
+          <OptionsMenuItem
+            onClick={() => {
+              navigate(`/videogames/update-videogame/${id}`);
+              setOptionsMenuOpen(false);
+            }}
+          >
+            Update Videogame
+          </OptionsMenuItem>
+          <Divider />
+          <OptionsMenuItem
+            onClick={() => {
+              handleDeleteVideogame(id);
+              setOptionsMenuOpen(false);
+            }}
+          >
+            Delete Videogame
+          </OptionsMenuItem>
+        </OptionsMenu>
         <TextContainer>
           <SectionContainer>
             <Title>{title}</Title>
@@ -391,9 +473,6 @@ const VideogamePage = () => {
           </SectionContainer>
         </>
       )}
-      <DangerButton onClick={() => handleDeleteVideogame(id)}>
-        Delete Videogame
-      </DangerButton>
     </Container>
   );
 };
