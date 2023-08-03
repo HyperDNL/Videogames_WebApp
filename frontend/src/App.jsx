@@ -27,7 +27,7 @@ const App = () => {
             element={<CreateVideogameFormPage />}
           />
           <Route
-            path="/videogames/update-videoogame/:id"
+            path="/videogames/update-videogame/:id"
             element={<UpdateVideogameFormPage />}
           />
           <Route path="*" element={<NotFoundPage />} />
