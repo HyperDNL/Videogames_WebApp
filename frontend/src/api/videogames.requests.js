@@ -174,10 +174,10 @@ export const deleteVideogameRequest = async (id) => {
 
 export const deleteThumbnailRequest = async (idVideogame, idThumbnail) => {
   try {
-    const { status } = await axios.delete(
+    const res = await axios.delete(
       `http://localhost:4000/api/videogames/${idVideogame}/thumbnails/${idThumbnail}`
     );
-    return status;
+    return res;
   } catch (error) {
     if (error.response) {
       const { response } = error;
