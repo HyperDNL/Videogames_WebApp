@@ -501,6 +501,16 @@ export const updateVideogame = async (req, res) => {
     const { body, files, params } = req;
     const { id } = params;
 
+    if (!id) {
+      return res.status(400).json({ message: "The ID parameter is required" });
+    }
+
+    if (!validateObjectIdField(id)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid data type in ID. Expected ObjectId." });
+    }
+
     const { title, description, year, developers, platforms, genres } = body;
 
     const developersData = developers
@@ -903,7 +913,7 @@ export const deleteThumbnail = async (req, res) => {
 
       await videogame.save();
 
-      res.json({ message: "Thumbnail deleted successfully" });
+      res.status(200).json({ message: "Thumbnail deleted successfully" });
     } catch (error) {
       const { message } = error;
       return res
