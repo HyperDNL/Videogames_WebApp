@@ -133,22 +133,22 @@ const CreateVideogameFormPage = () => {
     formData.append("description", description);
     formData.append("year", year);
 
-    developers.forEach((developer) => {
+    developers.map((developer) => {
       formData.append("developers", developer);
     });
 
-    platforms.forEach((platform) => {
+    platforms.map((platform) => {
       formData.append("platforms", platform);
     });
 
-    genres.forEach((genre) => {
+    genres.map((genre) => {
       formData.append("genres", genre);
     });
 
     formData.append("cover", cover);
     formData.append("landscape", landscape);
 
-    thumbnails.forEach((thumbnail) => {
+    thumbnails.map((thumbnail) => {
       formData.append("thumbnails", thumbnail);
     });
 
