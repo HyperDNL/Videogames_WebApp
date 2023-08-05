@@ -66,14 +66,20 @@ const Carousel = ({ thumbnails }) => {
     );
   };
 
+  const showArrows = thumbnails.length > 1;
+
   return (
     <CarouselContainer>
-      <PreviousButton onClick={goToPreviousSlide}>
-        <FiChevronLeft color="#1E2124" />
-      </PreviousButton>
-      <NextButton onClick={goToNextSlide}>
-        <FiChevronRight color="#1E2124" />
-      </NextButton>
+      {showArrows && (
+        <>
+          <PreviousButton onClick={goToPreviousSlide}>
+            <FiChevronLeft color="#1E2124" />
+          </PreviousButton>
+          <NextButton onClick={goToNextSlide}>
+            <FiChevronRight color="#1E2124" />
+          </NextButton>
+        </>
+      )}
       {thumbnails.map(({ thumbnail }, index) => (
         <Thumbnail
           key={index}
