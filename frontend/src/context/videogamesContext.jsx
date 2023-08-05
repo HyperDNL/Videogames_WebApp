@@ -133,21 +133,28 @@ export const VideogameProvider = ({ children }) => {
 
   const deleteThumbnail = async (idVideogame, idThumbnail) => {
     try {
-      const status = await deleteThumbnailRequest(idVideogame, idThumbnail);
+      const { data, status } = await deleteThumbnailRequest(
+        idVideogame,
+        idThumbnail
+      );
 
-      if (status === 204) {
+      if (status === 200) {
         setVideogames((videogames) =>
           videogames.map((videogame) =>
             videogame._id === idVideogame
               ? {
                   ...videogame,
                   thumbnails: videogame.thumbnails.filter(
-                    (thumbnail) => thumbnail._id !== idThumbnail
+                    ({ _id }) => _id !== idThumbnail
                   ),
                 }
               : videogame
           )
         );
+
+        const { message } = data;
+
+        ToastSuccess("deletedThumbnailSuccesfully", message);
       }
     } catch (error) {
       const { message } = error;
